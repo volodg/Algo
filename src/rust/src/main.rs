@@ -162,7 +162,7 @@ impl <'a> Crossword<'a> {
 
 struct CrosswordSolver<'a> {
     crossword: Crossword<'a>,
-    permutor: Permutor<i16>,
+    word_size: i16,
     places: Vec<Place>,
     start_pos: Pos,
     width: i16,
@@ -173,14 +173,14 @@ struct CrosswordSolver<'a> {
 
 impl <'a> CrosswordSolver<'a> {
     pub fn new(words: Vec<&'a str>, crosswords: Vec<Vec<char>>) -> Self {
-        let permutor = Permutor::<i16>::with_size(words.len());
+        let word_size = words.len() as i16;
         let crossword = Crossword::new(words, crosswords);
         let places = Vec::<Place>::new();
         let start_pos = Pos::new(0, 0);
         let (width, height) = crossword.get_cross_width_height();
         let curr_pos = 0;
         let max = 0;
-        Self { crossword, permutor, places, start_pos, width, height, curr_pos, max }
+        Self { crossword, word_size, places, start_pos, width, height, curr_pos, max }
     }
 
     //2 - test
@@ -301,8 +301,35 @@ impl <'a> CrosswordSolver<'a> {
         }
     }
 
+    fn can_select(&self, new_index: &i16, existing: &Vec<i16>) -> bool {
+        let new_word_place = &self.places[existing.len()];
+        let new_word = self.crossword.words[*new_index as usize];
+
+        if new_word.len() != new_word_place.size as usize {
+            return false
+        }
+
+        new_word_place.cross.iter().all(|cross| {
+            let real_index = existing[cross.word_index as usize];
+            let existing_word = self.crossword.words[real_index as usize];
+
+            let new_char = new_word.chars().nth(cross.my_pos as usize).unwrap();
+            let his_char = existing_word.chars().nth(cross.his_pos as usize).unwrap();
+
+            return new_char == his_char
+        })
+    }
+
     pub fn solve(mut self) -> Vec<String> {
         while self.find_word_place() {}
+
+        let mut permutor = Permutor::<i16>::with_size(self.word_size as usize);
+        let words: Vec<&str> = permutor
+            .next_perm_with_pr(&|a, b| self.can_select(a, b))
+            .unwrap()
+            .iter()
+            .map(|x| self.crossword.words[*x as usize])
+            .collect();
 
         vec![]
     }
