@@ -102,7 +102,6 @@ func crosswordPuzzle(crossword: [String], words: String) -> [String] {
     charsTable[index] = Array(crosswordLine)
   }
   
-  //HERE
   var places = [Place]()
   
   let height = charsTable.count
@@ -227,6 +226,8 @@ func crosswordPuzzle(crossword: [String], words: String) -> [String] {
   }
   printCrosses()
   
+  //HERE
+  
   func canSelect(newIndex: Int, existing: [Int]) -> Bool {
     let newWordPlace = places[existing.count]
     let newWord = allWords[newIndex]
@@ -271,6 +272,7 @@ func crosswordPuzzle(crossword: [String], words: String) -> [String] {
   return result
 }
 
+//test 1
 //var strings = [
 //  "++++++++++",
 //  "+------+++",
@@ -289,6 +291,7 @@ func crosswordPuzzle(crossword: [String], words: String) -> [String] {
 //pos: 2 crosses: ["wordIndex: 1 hisPos: 3 myPos: 0"]
 //pos: 3 crosses: ["wordIndex: 2 hisPos: 3 myPos: 0"]
 
+//test 2
 var strings = [
   "+-++++++++",
   "+-++++++++",
@@ -307,6 +310,7 @@ var strings = [
 //pos: 2 crosses: ["wordIndex: 1 hisPos: 4 myPos: 0"]
 //pos: 3 crosses: ["wordIndex: 2 hisPos: 4 myPos: 3"]
 
+//test 3
 //var strings = [
 //  "+-++++++++",
 //  "+-++++++++",
@@ -325,6 +329,7 @@ var strings = [
 //pos: 2 crosses: ["wordIndex: 0 hisPos: 5 myPos: 0"]
 //pos: 3 crosses: ["wordIndex: 2 hisPos: 4 myPos: 0"]
 
+//test 4
 //var strings = [
 //  "++++++-+++",
 //  "++------++",
