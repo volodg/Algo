@@ -350,6 +350,19 @@ mod tests {
         "POLAND;LHASA;SPAIN;INDIA"
     ];
 
+    const test_data_filling_1: &'static [&str] = &[
+        "++++++++++",
+        "+001000+++",
+        "+++1++++++",
+        "+++1++++++",
+        "+++22232++",
+        "+++1++3+++",
+        "++++++3+++",
+        "++++++3+++",
+        "++++++3+++",
+        "++++++++++"
+    ];
+
     const test_data_2: &'static [&str] = &[
         "+-++++++++",
         "+-++++++++",
@@ -364,12 +377,115 @@ mod tests {
         "LONDON;DELHI;ICELAND;ANKARA"
     ];
 
+    const test_data_filling_2: &'static [&str] = &[
+        "+0++++++++",
+        "+0++++++++",
+        "+0++++++++",
+        "+11112++++",
+        "+0+++2++++",
+        "+0+++2++++",
+        "+++++2++++",
+        "++333333++",
+        "+++++2++++",
+        "+++++2++++"
+    ];
+
+    const test_data_3: &'static [&str] = &[
+        "+-++++++++",
+        "+-++++++++",
+        "+-------++",
+        "+-++++++++",
+        "+-++++++++",
+        "+------+++",
+        "+-+++-++++",
+        "+++++-++++",
+        "+++++-++++",
+        "++++++++++",
+        "AGRA;NORWAY;ENGLAND;GWALIOR"
+    ];
+
+    const test_data_filling_3: &'static [&str] = &[
+        "+0++++++++",
+        "+0++++++++",
+        "+1111111++",
+        "+0++++++++",
+        "+0++++++++",
+        "+222232+++",
+        "+0+++3++++",
+        "+++++3++++",
+        "+++++3++++",
+        "++++++++++",
+    ];
+
+    const test_data_4: &'static [&str] = &[
+        "++++++-+++",
+        "++------++",
+        "++++++-+++",
+        "++++++-+++",
+        "+++------+",
+        "++++++-+-+",
+        "++++++-+-+",
+        "++++++++-+",
+        "++++++++-+",
+        "++++++++-+",
+        "ICELAND;MEXICO;PANAMA;ALMATY"
+    ];
+
+    const test_data_filling_4: &'static [&str] = &[
+        "++++++0+++",
+        "++111111++",
+        "++++++0+++",
+        "++++++0+++",
+        "+++222223+",
+        "++++++0+3+",
+        "++++++0+3+",
+        "++++++++3+",
+        "++++++++3+",
+        "++++++++3+"
+    ];
+
     fn get_line(solver: &CrosswordSolver, index: usize) -> String {
         solver.crossword.crosswords[index].clone().into_iter().collect()
     }
 
     #[test]
+    fn test_find_word_place() {
+        let mut max = 10;
+        let mut solver = create_solver(test_data_1.to_vec());
+        for _ in 0..max { solver.find_word_place(); }
+        assert!(!solver.find_word_place());
+
+        let expected_chars: Vec<Vec<char>> = test_data_filling_1.iter().map(|x| x.chars().collect()).collect();
+        assert_eq!(solver.crossword.crosswords, expected_chars);
+
+        let mut solver = create_solver(test_data_2.to_vec());
+        for _ in 0..max { solver.find_word_place(); }
+        assert!(!solver.find_word_place());
+
+        let expected_chars: Vec<Vec<char>> = test_data_filling_2.iter().map(|x| x.chars().collect()).collect();
+        assert_eq!(solver.crossword.crosswords, expected_chars);
+
+        let mut solver = create_solver(test_data_3.to_vec());
+        for _ in 0..max { solver.find_word_place(); }
+        assert!(!solver.find_word_place());
+
+        let expected_chars: Vec<Vec<char>> = test_data_filling_3.iter().map(|x| x.chars().collect()).collect();
+        assert_eq!(solver.crossword.crosswords, expected_chars);
+
+        let mut solver = create_solver(test_data_4.to_vec());
+        for _ in 0..max { solver.find_word_place(); }
+        assert!(!solver.find_word_place());
+
+        let expected_chars: Vec<Vec<char>> = test_data_filling_4.iter().map(|x| x.chars().collect()).collect();
+        assert_eq!(solver.crossword.crosswords, expected_chars);
+    }
+
+    #[test]
     fn test_find_words_start_pos() {
+        let mut solver = create_solver(test_data_1.to_vec());
+
+        assert_eq!(solver.find_words_start_pos(), Some(PosWithDirection::new(Pos::new(1, 1), true)));
+
         let mut solver = create_solver(test_data_2.to_vec());
 
         let pos = solver.find_words_start_pos();
