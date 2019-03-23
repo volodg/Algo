@@ -226,8 +226,6 @@ func crosswordPuzzle(crossword: [String], words: String) -> [String] {
   }
   printCrosses()
   
-  //HERE
-  
   func canSelect(newIndex: Int, existing: [Int]) -> Bool {
     let newWordPlace = places[existing.count]
     let newWord = allWords[newIndex]
