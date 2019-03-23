@@ -1,6 +1,4 @@
 use std::io;
-use std::str::Chars;
-//use std::iter;
 
 struct PartialPerm<El> {
     permuted: Vec<El>,
@@ -8,6 +6,7 @@ struct PartialPerm<El> {
 }
 
 impl <El> PartialPerm<El> {
+
     pub fn new(permuted: Vec<El>, to_permute: Vec<El>) -> Self { Self { permuted, to_permute } }
 }
 
@@ -76,9 +75,7 @@ impl <El: Clone> Permutor<El> {
 
 struct Pos { x: i16, y: i16 }
 
-impl Pos {
-    fn new(x: i16, y: i16) -> Self { Self { x, y } }
-}
+impl Pos { fn new(x: i16, y: i16) -> Self { Self { x, y } } }
 
 struct PosWithDirection { pos: Pos, hor: bool }
 
@@ -133,18 +130,19 @@ impl <'a> Crossword<'a> {
         let height = self.crosswords.len();
         let width = self.crosswords[0].len();
 
+
         return vec![]
     }
 }
 
 fn crosswordPuzzle(crossword: Vec<String>, words: String) -> Vec<String> {
 
-    let crossword = Crossword::new(
+    let mut crossword = Crossword::new(
         words.split(";").collect::<Vec<&str>>(),
         crossword.iter().map(|x| x.chars().collect()).collect()
     );
 
-    vec![]
+    crossword.solve()
 }
 
 #[cfg(test)]
