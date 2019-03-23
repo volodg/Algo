@@ -320,7 +320,7 @@ impl <'a> CrosswordSolver<'a> {
         })
     }
 
-    fn solve_crossword(&mut self) {
+    fn solve_crossword(mut self) -> Vec<Vec<char>> {
         while self.find_word_place() {}
 
         let mut permutor = Permutor::<i16>::with_size(self.word_size as usize);
@@ -344,25 +344,15 @@ impl <'a> CrosswordSolver<'a> {
                 };
                 self.crossword.crosswords[yy as usize][xx as usize] = word_chars[i as usize];
             }
-
         }
+
+        self.crossword.crosswords
     }
 
-    pub fn solve(mut self) -> Vec<String> {
-        self.solve_crossword();
-
-        vec![]
+    pub fn solve(self) -> Vec<String> {
+        let solved = self.solve_crossword();
+        solved.iter().map(|x| x.clone().into_iter().collect()).collect()
     }
-}
-
-fn crosswordPuzzle(crossword: &Vec<String>, words: &String) -> Vec<String> {
-
-    let crossword = CrosswordSolver::new(
-        words.split(";").collect::<Vec<&str>>(),
-        crossword.iter().map(|x| x.chars().collect()).collect()
-    );
-
-    crossword.solve()
 }
 
 fn parse_input_lines(lines: Vec<&str>) -> (Vec<&str>, &str) {
@@ -450,6 +440,19 @@ mod tests {
         "+++++2++++"
     ];
 
+    const test_data_result_2: &'static [&str] = &[
+        "+L++++++++",
+        "+O++++++++",
+        "+N++++++++",
+        "+DELHI++++",
+        "+O+++C++++",
+        "+N+++E++++",
+        "+++++L++++",
+        "++ANKARA++",
+        "+++++N++++",
+        "+++++D++++"
+    ];
+
     const test_data_3: &'static [&str] = &[
         "+-++++++++",
         "+-++++++++",
@@ -475,6 +478,19 @@ mod tests {
         "+++++3++++",
         "+++++3++++",
         "++++++++++",
+    ];
+
+    const test_data_result_3: &'static [&str] = &[
+        "+E++++++++",
+        "+N++++++++",
+        "+GWALIOR++",
+        "+L++++++++",
+        "+A++++++++",
+        "+NORWAY+++",
+        "+D+++G++++",
+        "+++++R++++",
+        "+++++A++++",
+        "++++++++++"
     ];
 
     const test_data_4: &'static [&str] = &[
@@ -504,35 +520,49 @@ mod tests {
         "++++++++3+"
     ];
 
+    const test_data_result_4: &'static [&str] = &[
+        "++++++I+++",
+        "++MEXICO++",
+        "++++++E+++",
+        "++++++L+++",
+        "+++PANAMA+",
+        "++++++N+L+",
+        "++++++D+M+",
+        "++++++++A+",
+        "++++++++T+",
+        "++++++++Y+"
+    ];
+
+
     fn get_line(solver: &CrosswordSolver, index: usize) -> String {
         solver.crossword.crosswords[index].clone().into_iter().collect()
     }
 
     #[test]
     fn test_solve_crossword() {
-        let mut solver = create_solver(test_data_1.to_vec());
-        solver.solve_crossword();
+        let solver = create_solver(test_data_1.to_vec());
+        let solved = solver.solve_crossword();
 
         let expected_chars: Vec<Vec<char>> = test_data_result_1.iter().map(|x| x.chars().collect()).collect();
-        assert_eq!(solver.crossword.crosswords, expected_chars);
+        assert_eq!(solved, expected_chars);
 
-//        let mut solver = create_solver(test_data_2.to_vec());
-//        solver.solve_crossword();
-//
-//        let expected_chars: Vec<Vec<char>> = test_data_filling_2.iter().map(|x| x.chars().collect()).collect();
-//        assert_eq!(solver.crossword.crosswords, expected_chars);
-//
-//        let mut solver = create_solver(test_data_3.to_vec());
-//        solver.solve_crossword();
-//
-//        let expected_chars: Vec<Vec<char>> = test_data_filling_3.iter().map(|x| x.chars().collect()).collect();
-//        assert_eq!(solver.crossword.crosswords, expected_chars);
-//
-//        let mut solver = create_solver(test_data_4.to_vec());
-//        solver.solve_crossword();
-//
-//        let expected_chars: Vec<Vec<char>> = test_data_filling_4.iter().map(|x| x.chars().collect()).collect();
-//        assert_eq!(solver.crossword.crosswords, expected_chars);
+        let solver = create_solver(test_data_2.to_vec());
+        let solved = solver.solve_crossword();
+
+        let expected_chars: Vec<Vec<char>> = test_data_result_2.iter().map(|x| x.chars().collect()).collect();
+        assert_eq!(solved, expected_chars);
+
+        let solver = create_solver(test_data_3.to_vec());
+        let solved = solver.solve_crossword();
+
+        let expected_chars: Vec<Vec<char>> = test_data_result_3.iter().map(|x| x.chars().collect()).collect();
+        assert_eq!(solved, expected_chars);
+
+        let solver = create_solver(test_data_4.to_vec());
+        let solved = solver.solve_crossword();
+
+        let expected_chars: Vec<Vec<char>> = test_data_result_4.iter().map(|x| x.chars().collect()).collect();
+        assert_eq!(solved, expected_chars);
     }
 
     #[test]
@@ -667,13 +697,12 @@ fn main() {
     let mut strings = Vec::<String>::with_capacity(11);
 
     for _ in 0..11 {
-        let str = read_str();
+        let str = read_str().trim().to_string();
         strings.push(str)
     }
 
     let solver = create_solver(strings.iter().map(|x| x.as_ref()).collect());
-    solver.solve();
+    let result = solver.solve().join("\n");
 
-//    let str = read_str();
-//    println!("{}", str)
+    println!("{}", result)
 }
