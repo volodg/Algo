@@ -108,26 +108,36 @@ func crosswordPuzzle(crossword: [String], words: String) -> [String] {
   let height = charsTable.count
   let width = charsTable[0].count
   
+  var startPos = (x: 0, y: 0)
+  
   func findWordStartPos() -> (x: Int, y: Int, hor: Bool)? {
+    var startX = startPos.x
+    var useStartPos = true
     for y in 0..<height {
-      for x in 0..<width {
-        let currChar = charsTable[y][x]
+      var yy = y
+      if useStartPos {
+        yy = startPos.y
+      }
+      for x in startX..<width {
+        let currChar = charsTable[yy][x]
         let isStart = currChar == "-" || "0"..."9" ~= currChar
         if isStart {
           if (x + 1 < width && charsTable[y][x + 1] == "-") {
-            return (x: x, y: y, hor: true)
+            startPos = (x: x, y: yy)
+            return (x: x, y: yy, hor: true)
           }
           if (y + 1 < height && charsTable[y + 1][x] == "-") {
-            return (x: x, y: y, hor: false)
+            startPos = (x: x, y: yy)
+            return (x: x, y: yy, hor: false)
           }
         }
       }
+      startX = 0
+      useStartPos = false
     }
     
     return nil
   }
-  
-  let decimals = CharacterSet.decimalDigits
   
   //TODO return crosses
   func fillWord(x: Int, y: Int, hor: Bool, index: Int) -> Place {
@@ -202,7 +212,6 @@ func crosswordPuzzle(crossword: [String], words: String) -> [String] {
     let wordIndex = places.count
     
     let place = fillWord(x: wordStartPos.x, y: wordStartPos.y, hor: wordStartPos.hor, index: wordIndex)
-    //printState()
     
     places.append(place)
     
@@ -259,8 +268,8 @@ func crosswordPuzzle(crossword: [String], words: String) -> [String] {
   
   let result = charsTable.map { String($0) }
   
-  return words.map { String($0) }
-  //return result
+  //return words.map { String($0) }
+  return result
 }
 
 //var strings = [
@@ -281,37 +290,37 @@ func crosswordPuzzle(crossword: [String], words: String) -> [String] {
 //pos: 2 crosses: ["wordIndex: 1 hisPos: 3 myPos: 0"]
 //pos: 3 crosses: ["wordIndex: 2 hisPos: 3 myPos: 0"]
 
-//var strings = [
-//  "+-++++++++",
-//  "+-++++++++",
-//  "+-++++++++",
-//  "+-----++++",
-//  "+-+++-++++",
-//  "+-+++-++++",
-//  "+++++-++++",
-//  "++------++",
-//  "+++++-++++",
-//  "+++++-++++",
-//  "LONDON;DELHI;ICELAND;ANKARA"
-//]
+var strings = [
+  "+-++++++++",
+  "+-++++++++",
+  "+-++++++++",
+  "+-----++++",
+  "+-+++-++++",
+  "+-+++-++++",
+  "+++++-++++",
+  "++------++",
+  "+++++-++++",
+  "+++++-++++",
+  "LONDON;DELHI;ICELAND;ANKARA"
+]
 //pos: 0 crosses: []
 //pos: 1 crosses: ["wordIndex: 0 hisPos: 3 myPos: 0"]
 //pos: 2 crosses: ["wordIndex: 1 hisPos: 4 myPos: 0"]
 //pos: 3 crosses: ["wordIndex: 2 hisPos: 4 myPos: 3"]
 
-var strings = [
-  "+-++++++++",
-  "+-++++++++",
-  "+-------++",
-  "+-++++++++",
-  "+-++++++++",
-  "+------+++",
-  "+-+++-++++",
-  "+++++-++++",
-  "+++++-++++",
-  "++++++++++",
-  "AGRA;NORWAY;ENGLAND;GWALIOR"
-]//ENGLAND;GWALIOR;NORWAY;AGRA
+//var strings = [
+//  "+-++++++++",
+//  "+-++++++++",
+//  "+-------++",
+//  "+-++++++++",
+//  "+-++++++++",
+//  "+------+++",
+//  "+-+++-++++",
+//  "+++++-++++",
+//  "+++++-++++",
+//  "++++++++++",
+//  "AGRA;NORWAY;ENGLAND;GWALIOR"
+//]//ENGLAND;GWALIOR;NORWAY;AGRA
 //pos: 0 crosses: []
 //pos: 1 crosses: ["wordIndex: 0 hisPos: 2 myPos: 0"]
 //pos: 2 crosses: ["wordIndex: 0 hisPos: 5 myPos: 0"]
@@ -353,7 +362,7 @@ guard let words = readLine2() else { fatalError("Bad input") }
 initialPerm = []//[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 completed = false
 
-//let result = crosswordPuzzle(crossword: crossword, words: words)
+let result = crosswordPuzzle(crossword: crossword, words: words)
 
 //let result = rotLeft(a: a, d: d)
-//print(result.joined(separator: ";"))
+print(result.joined(separator: "\n"))
