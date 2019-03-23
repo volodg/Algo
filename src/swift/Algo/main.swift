@@ -141,8 +141,7 @@ func crosswordPuzzle(crossword: [String], words: String) -> [String] {
   
   //TODO return crosses
   func fillWord(x: Int, y: Int, hor: Bool, index: Int) -> Place {
-    var currPos = hor ? x : y
-    let max = hor ? width : height
+    var (currPos, max) = hor ? (x, width) : (y, height)
     
     func currPosXY() -> (x: Int, y: Int) {
       if hor { return (x: currPos, y: y) } else { return (x: x, y: currPos) }

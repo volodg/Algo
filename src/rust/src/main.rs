@@ -141,6 +141,14 @@ impl <'a> Crossword<'a> {
         self.crosswords[y as usize][x as usize]
     }
 
+    fn get_cross_char_pos(&self, pos: &Pos) -> char {
+        self.get_cross_char(pos.x, pos.y)
+    }
+
+    fn set_cross_char_pos(&mut self, pos: &Pos, chr: char) {
+        self.crosswords[pos.y as usize][pos.x as usize] = chr
+    }
+
     fn get_cross_width_height(&self) -> (i16, i16) {
         (self.crosswords[0].len() as i16, self.crosswords.len() as i16)
     }
@@ -158,11 +166,11 @@ impl <'a> Crossword<'a> {
             for yy in 0..height {
                 let y = if use_start_pos { start_pos.y } else { yy };
                 for x in start_x..width {
-                    let curr_char = self.get_cross_char(x, y);
+                    let pos = Pos::new(x as i16, y as i16);
+                    let curr_char = self.get_cross_char_pos(&pos);
                     if !curr_char.can_start_word() {
                         continue
                     }
-                    let pos = Pos::new(x as i16, y as i16);
                     if x + 1 < width && self.get_cross_char(x + 1, y) == FILL_CHAR {
                         start_pos = pos;
                         return Some(PosWithDirection::new(start_pos, true))
@@ -177,6 +185,73 @@ impl <'a> Crossword<'a> {
             }
 
             None
+        };
+
+        let fill_word = |pos_dir: &PosWithDirection, index: i16| -> Place {
+            let (mut curr_pos, max) = if pos_dir.hor {
+                (pos_dir.pos.x, width)
+            } else {
+                (pos_dir.pos.y, height)
+            };
+
+            let curr_pos_xy = || -> Pos {
+                if pos_dir.hor { Pos::new(curr_pos, pos_dir.pos.y) } else { Pos::new(pos_dir.pos.x, curr_pos) }
+            };
+
+            let get_curr = || -> char { self.get_cross_char_pos(&curr_pos_xy()) };
+
+            let set_curr = |chr: char| {
+                self.set_cross_char_pos(&curr_pos_xy(), chr)
+            };
+//
+//            var size = 0
+//            var crosses = [Cross]()
+//
+//            var currChar = getCurr()
+//
+//            fn findHisPos(hor: Bool, x: Int, y: Int) -> Int {
+//                var result = 0
+//                var xx = x
+//                var yy = y
+//                var currChar = charsTable[yy][xx]
+//                while ("0"..."9" ~= currChar) {
+//                    if (hor) {
+//                        xx -= 1
+//                    } else {
+//                        yy -= 1
+//                    }
+//                    if xx < 0 || yy < 0 {
+//                        return result
+//                    }
+//                    currChar = charsTable[yy][xx]
+//                    result += 1
+//                }
+//                return result - 1
+//            }
+//
+//            while (currChar == "-" || "0"..."9" ~= currChar) {
+//                let str = String(index)
+//                let indexChar = str.startIndex
+//                if "0"..."9" ~= currChar {
+//                    let crossWordIndex = Int(String(currChar))!
+//                let myPos = size
+//                let currXY = currPosXY()
+//                let hisPos = findHisPos(hor: !hor, x: currXY.x, y: currXY.y)
+//                let cross = Cross(myPos: myPos, wordIndex: crossWordIndex, hisPos: hisPos)
+//                crosses.append(cross)
+//            }
+//                setCurr(str[indexChar])
+//                size += 1
+//                currPos += 1
+//                if currPos >= max {
+//                    break
+//                } else {
+//                    currChar = getCurr()
+//                }
+//            }
+//
+//            return Place(pos: (x: x, y: y, hor: hor), size: size, cross: crosses)
+            panic!()
         };
 
         vec![]
