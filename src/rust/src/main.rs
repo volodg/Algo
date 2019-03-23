@@ -109,6 +109,19 @@ struct Crossword<'a> {
     permutor: Permutor<i16>,
 }
 
+const FILL_CHAR: char = '-';
+
+trait CrosswordTools {
+    fn can_start_word(&self) -> bool;
+}
+
+impl CrosswordTools for char {
+    #[inline(always)]
+    fn can_start_word(&self) -> bool {
+        (*self) == FILL_CHAR || (*self).is_numeric()
+    }
+}
+
 impl <'a> Crossword<'a> {
     fn initial_permutations(words_count: usize) -> Vec<i16> {
         let mut initial_permutations = Vec::<i16>::with_capacity(words_count);
@@ -124,14 +137,49 @@ impl <'a> Crossword<'a> {
         Self { words, crosswords, permutor }
     }
 
+    fn get_cross_char(&self, x: i16, y: i16) -> char {
+        self.crosswords[y as usize][x as usize]
+    }
+
+    fn get_cross_width_height(&self) -> (i16, i16) {
+        (self.crosswords[0].len() as i16, self.crosswords.len() as i16)
+    }
+
     pub fn solve(&mut self) -> Vec<String> {
         let mut places = Vec::<Place>::new();
 
-        let height = self.crosswords.len();
-        let width = self.crosswords[0].len();
+        let (width, height) = self.get_cross_width_height();
 
+        let mut start_pos = Pos::new(0, 0);
 
-        return vec![]
+        let find_words_start_pos = || -> Option<PosWithDirection> {
+            let mut start_x = start_pos.x;
+            let mut use_start_pos = true;
+            for yy in 0..height {
+                let y = if use_start_pos { start_pos.y } else { yy };
+                for x in start_x..width {
+                    let curr_char = self.get_cross_char(x, y);
+                    if !curr_char.can_start_word() {
+                        continue
+                    }
+                    let pos = Pos::new(x as i16, y as i16);
+                    if x + 1 < width && self.get_cross_char(x + 1, y) == FILL_CHAR {
+                        start_pos = pos;
+                        return Some(PosWithDirection::new(start_pos, true))
+                    }
+                    if y + 1 < height && self.get_cross_char(x, y + 1) == FILL_CHAR {
+                        start_pos = pos;
+                        return Some(PosWithDirection::new(start_pos, false))
+                    }
+                }
+                start_x = 0;
+                use_start_pos = false;
+            }
+
+            None
+        };
+
+        vec![]
     }
 }
 
@@ -148,6 +196,18 @@ fn crosswordPuzzle(crossword: Vec<String>, words: String) -> Vec<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::char::from_digit;
+
+    #[test]
+    fn test_can_start_word() {
+        let nums: Vec<u8> = (0..10).collect();
+        let digit_chars: Vec<char> = nums.iter().map(|x| from_digit(*x as u32, 10).unwrap()).collect();
+        let all_digits = digit_chars.iter().all(|x| x.can_start_word());
+        debug_assert!(all_digits);
+        debug_assert!('-'.can_start_word());
+        debug_assert!(!'a'.can_start_word());
+        debug_assert!(!'?'.can_start_word());
+    }
 
     #[test]
     fn test_permutor_with_predicate() {
