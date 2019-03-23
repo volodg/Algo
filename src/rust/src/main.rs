@@ -89,12 +89,12 @@ impl Permutor<i16> {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Debug)]
 struct Pos { x: i16, y: i16 }
 
 impl Pos { fn new(x: i16, y: i16) -> Self { Self { x, y } } }
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Debug)]
 struct PosWithDirection { pos: Pos, hor: bool }
 
 impl PosWithDirection {
@@ -172,7 +172,6 @@ struct CrosswordSolver<'a> {
 }
 
 impl <'a> CrosswordSolver<'a> {
-    //1 - test
     pub fn new(words: Vec<&'a str>, crosswords: Vec<Vec<char>>) -> Self {
         let permutor = Permutor::<i16>::with_size(words.len());
         let crossword = Crossword::new(words, crosswords);
@@ -351,8 +350,31 @@ mod tests {
         "POLAND;LHASA;SPAIN;INDIA"
     ];
 
+    const test_data_2: &'static [&str] = &[
+        "+-++++++++",
+        "+-++++++++",
+        "+-++++++++",
+        "+-----++++",
+        "+-+++-++++",
+        "+-+++-++++",
+        "+++++-++++",
+        "++------++",
+        "+++++-++++",
+        "+++++-++++",
+        "LONDON;DELHI;ICELAND;ANKARA"
+    ];
+
     fn get_line(solver: &CrosswordSolver, index: usize) -> String {
         solver.crossword.crosswords[index].clone().into_iter().collect()
+    }
+
+    #[test]
+    fn test_find_words_start_pos() {
+        let mut solver = create_solver(test_data_2.to_vec());
+
+        let pos = solver.find_words_start_pos();
+        assert_eq!(pos, Some(PosWithDirection::new(Pos::new(1, 0), false)));
+        assert_eq!(solver.find_words_start_pos(), pos);
     }
 
     #[test]
