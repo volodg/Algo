@@ -128,11 +128,9 @@ mod tests {
 
     #[test]
     fn test_big_graph() {
-        let cost = 6;
-
-        let mut input_f = File::open("./src/graph_edges_input.txt").unwrap();
+        let input_f = File::open("./src/graph_edges_input.txt").unwrap();
         let mut input_reader = BufReader::new(input_f);
-        let mut output_f = File::open("./src/graph_edges_output.txt").unwrap();
+        let output_f = File::open("./src/graph_edges_output.txt").unwrap();
         let mut ouput_reader = BufReader::new(output_f);
 
         let test_number = read_num::<u32>(&mut input_reader);
@@ -152,17 +150,6 @@ mod tests {
             let result: Vec<String> = graph.build_depths(start_node - 1, cost).iter().map(|x| x.to_string()).collect();
             assert_eq!(result.join(" "), read_line(&mut ouput_reader));
         }
-
-//        let mut graph = Graph::new(4);
-//        graph.add_test_edge(1, 2);
-//        graph.add_test_edge(1, 3);
-//
-//        assert_eq!(graph.build_depths(0, cost), vec![6, 6, -1]);
-//
-//        let mut graph = Graph::new(3);
-//        graph.add_test_edge(2, 3);
-//
-//        assert_eq!(graph.build_depths(1, cost), vec![-1, 6]);
     }
 }
 
