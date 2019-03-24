@@ -1,6 +1,6 @@
 use std::io;
 
-fn min_candles(heights: &Vec<i32>) ->  i64 {
+fn largest_rectangle(heights: &Vec<i32>) -> i64 {
     let mut max = 0;
     let size = heights.len();
     let mut stack = Vec::<usize>::with_capacity(size);

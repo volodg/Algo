@@ -37,10 +37,13 @@ impl <El> MyQueue<El> {
     }
 }
 
-fn read_num() -> i32 {
+fn read_num<T>() -> T
+    where
+        T: std::str::FromStr,
+        <T as std::str::FromStr>::Err: std::fmt::Debug, {
     let mut input_text = String::new();
     io::stdin().read_line(&mut input_text).unwrap();
-    input_text.trim().parse::<i32>().unwrap()
+    input_text.trim().parse::<T>().unwrap()
 }
 
 fn read_nums() -> Vec<i32> {
