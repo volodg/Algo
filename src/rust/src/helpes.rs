@@ -46,11 +46,14 @@ fn read_num<T>() -> T
     input_text.trim().parse::<T>().unwrap()
 }
 
-fn read_nums() -> Vec<i32> {
+fn read_nums<T>() -> Vec<T>
+    where
+        T: std::str::FromStr,
+        <T as std::str::FromStr>::Err: std::fmt::Debug, {
     let mut input_text = String::new();
     io::stdin().read_line(&mut input_text).unwrap();
     let vec = input_text.trim().split_whitespace();
-    vec.map(|x| x.trim().parse::<i32>().unwrap()).collect()
+    vec.map(|x| x.trim().parse::<T>().unwrap()).collect()
 }
 
 fn read_2_nums<T>() -> (T, T)
