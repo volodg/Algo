@@ -2,7 +2,8 @@ use std::io;
 use std::cmp::max;
 
 fn min_candies_update(ratings: &[u32], candies: &mut [u32]) {
-    for i in 0..(ratings.len() - 1) {
+    let len = ratings.len();
+    for i in 0..(len - 1) {
         if ratings[i] < ratings[i + 1] {
             candies[i + 1] = max(candies[i + 1], candies[i] + 1);
         } else {
@@ -12,8 +13,8 @@ fn min_candies_update(ratings: &[u32], candies: &mut [u32]) {
         }
     }
 
-    for j in 0..(ratings.len() - 1) {
-        let i = ratings.len() - j - 2;
+    for j in 0..(len - 1) {
+        let i = len - j - 2;
         if ratings[i] < ratings[i + 1] {
             candies[i + 1] = max(candies[i + 1], candies[i] + 1);
         } else {
@@ -53,7 +54,7 @@ mod tests {
 
     #[test]
     fn test_min_candies_big_input() {
-        let top_num: u64 = 100_000;
+        let top_num: u64 = 1_000_000;
         let result = (top_num + 1)*top_num/2;
         let mut ratings = Vec::<u32>::with_capacity(top_num as usize);
         for i in 0..top_num {
