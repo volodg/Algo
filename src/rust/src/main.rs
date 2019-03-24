@@ -61,16 +61,6 @@ impl Graph {
         }
     }
 
-    fn find_not_visited(&self, start_index: u32) -> Option<u32> {
-        let size = self.nodes.len();
-        for i in (start_index + 1)..(size as u32) {
-            if !self.visited.contains(&i) {
-                return Some(i);
-            }
-        }
-        None
-    }
-
     pub fn build_depths(mut self, start_node: u32, cost: i32) -> Vec<i32> {
         self.build_depth_from(start_node, cost);
         self.depths.remove(start_node as usize);
@@ -102,11 +92,77 @@ mod tests {
         graph.add_test_edge(2, 3);
 
         assert_eq!(graph.build_depths(1, cost), vec![-1, 6]);
+    }
 
+    use std::io::BufReader;
+    use std::io::BufRead;
+    use std::fs::File;
+    //use std::io::Read;
+    //use std::path::Path;
+
+    fn read_line(file: &mut BufReader<File>) -> String {
+        let mut input_text = String::new();
+        file.read_line(&mut input_text).unwrap();
+        input_text.trim().to_string()
+    }
+
+    fn read_num<T>(file: &mut BufReader<File>) -> T
+        where
+            T: std::str::FromStr,
+            <T as std::str::FromStr>::Err: std::fmt::Debug, {
+        let mut input_text = String::new();
+        file.read_line(&mut input_text).unwrap();
+        input_text.trim().parse::<T>().unwrap()
+    }
+
+    fn read_2_nums<T>(file: &mut BufReader<File>) -> (T, T)
+        where
+            T: std::str::FromStr,
+            <T as std::str::FromStr>::Err: std::fmt::Debug, {
+        let mut input_text = String::new();
+        file.read_line(&mut input_text).unwrap();
+        let mut vec = input_text.trim().split_whitespace();
+        let mut to_res = || -> T { vec.next().map(|x| x.parse::<T>().unwrap()).unwrap() };
+        (to_res(), to_res())
+    }
+
+    #[test]
+    fn test_big_graph() {
+        let cost = 6;
+
+        let mut input_f = File::open("./src/graph_edges_input.txt").unwrap();
+        let mut input_reader = BufReader::new(input_f);
+        let mut output_f = File::open("./src/graph_edges_output.txt").unwrap();
+        let mut ouput_reader = BufReader::new(output_f);
+
+        let test_number = read_num::<u32>(&mut input_reader);
+        let cost = 6;
+
+        for _ in 0..test_number {
+            let (nodes, edges) = read_2_nums::<u32>(&mut input_reader);
+            let mut graph = Graph::new(nodes);
+
+            for _ in 0..edges {
+                let (from, to) = read_2_nums::<u32>(&mut input_reader);
+                graph.add_edge(from - 1, to - 1)
+            }
+
+            let start_node = read_num::<u32>(&mut input_reader);
+
+            let result: Vec<String> = graph.build_depths(start_node - 1, cost).iter().map(|x| x.to_string()).collect();
+            assert_eq!(result.join(" "), read_line(&mut ouput_reader));
+        }
+
+//        let mut graph = Graph::new(4);
+//        graph.add_test_edge(1, 2);
+//        graph.add_test_edge(1, 3);
+//
+//        assert_eq!(graph.build_depths(0, cost), vec![6, 6, -1]);
+//
 //        let mut graph = Graph::new(3);
 //        graph.add_test_edge(2, 3);
 //
-//        assert_eq!(graph.build_depths(cost), vec![-1, 6]);
+//        assert_eq!(graph.build_depths(1, cost), vec![-1, 6]);
     }
 }
 
@@ -137,7 +193,6 @@ fn main() {
     for _ in 0..test_number {
         let (nodes, edges) = read_2_nums::<u32>();
         let mut graph = Graph::new(nodes);
-        //println!("{:?}", (nodes, edges));
 
         for _ in 0..edges {
             let (from, to) = read_2_nums::<u32>();
