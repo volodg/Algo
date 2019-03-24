@@ -7,7 +7,6 @@ struct PartialPerm<El> {
 }
 
 impl <El> PartialPerm<El> {
-
     pub fn new(permuted: Vec<El>, to_permute: Vec<El>) -> Self { Self { permuted, to_permute } }
 }
 

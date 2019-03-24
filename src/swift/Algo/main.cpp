@@ -7,51 +7,31 @@
 #include <queue>
 using namespace std;
 
-class MyQueue {
-  
-public:
-  stack<int> stack_newest_on_top, stack_oldest_on_top;
-  void push(int x) {
-    stack_newest_on_top.push(x);
-  }
-  
-  void pop() {
-    move_new_to_old();
-    stack_oldest_on_top.pop();
-  }
-  
-  int front() {
-    move_new_to_old();
-    return stack_oldest_on_top.top();
-  }
-  
-private:
-  inline void move_new_to_old() {
-    if (stack_oldest_on_top.empty()) {
-      while (!stack_newest_on_top.empty()) {
-        stack_oldest_on_top.push(stack_newest_on_top.top());
-        stack_newest_on_top.pop();
-      }
-    }
-  }
+struct Node {
+  int data;
+  Node* left;
+  Node* right;
 };
 
-int main() {
-  MyQueue q1;
-  int q, type, x;
-  cin >> q;
+bool checkBST(Node* root, int* leftLimit, int* rightLimit) {
+  if (root == nullptr) { return true; }
   
-  for(int i = 0; i < q; i++) {
-    cin >> type;
-    if(type == 1) {
-      cin >> x;
-      q1.push(x);
-    }
-    else if(type == 2) {
-      q1.pop();
-    }
-    else cout << q1.front() << endl;
+  if (leftLimit != nullptr && root->data <= *leftLimit) {
+    return false;
   }
+  
+  if (rightLimit != nullptr && root->data >= *rightLimit) {
+    return false;
+  }
+  
+  return checkBST(root->left, leftLimit, &root->data) && checkBST(root->right, &root->data, rightLimit);
+}
+
+bool checkBST(Node* root) {
+  return checkBST(root, nullptr, nullptr);
+}
+
+int main() {
   /* Enter your code here. Read input from STDIN. Print output to STDOUT */
   return 0;
 }
