@@ -6,77 +6,69 @@
 #include <stack>
 #include <queue>
 
-// C++ program to find maximum rectangular area in
-// linear time
-#include<iostream>
-#include<stack>
 using namespace std;
 
-// The main function to find the maximum rectangular
-// area under given histogram with n bars
-int getMaxArea(int hist[], int n)
-{
-  // Create an empty stack. The stack holds indexes
-  // of hist[] array. The bars stored in stack are
-  // always in increasing order of their heights.
-  stack<int> s;
+void min_candies_update(size_t offset, const vector<int>& ratings, vector<int>& candies) {
   
-  int max_area = 0; // Initalize max area
-  int tp;  // To store top of stack
-  int area_with_top; // To store area with top bar
-  // as the smallest bar
+  auto ratings_len = ratings.size() - offset;
   
-  // Run through all bars of given histogram
-  int i = 0;
-  while (i < n)
-  {
-    // If this bar is higher than the bar on top
-    // stack, push it to stack
-    if (s.empty() || hist[s.top()] <= hist[i])
-      s.push(i++);
-    
-    // If this bar is lower than top of stack,
-    // then calculate area of rectangle with stack
-    // top as the smallest (or minimum height) bar.
-    // 'i' is 'right index' for the top and element
-    // before top in stack is 'left index'
-    else
-    {
-      tp = s.top();  // store the top index
-      s.pop();  // pop the top
-      
-      // Calculate the area with hist[tp] stack
-      // as smallest bar
-      area_with_top = hist[tp] * (s.empty() ? i :
-                                  i - s.top() - 1);
-      
-      // update max area, if needed
-      if (max_area < area_with_top)
-        max_area = area_with_top;
-    }
+  if (ratings_len == 0 || ratings_len == 1) {
+    return;
   }
   
-  // Now pop the remaining bars from stack and calculate
-  // area with every popped bar as the smallest bar
-  while (s.empty() == false)
-  {
-    tp = s.top();
-    s.pop();
-    area_with_top = hist[tp] * (s.empty() ? i :
-                                i - s.top() - 1);
-    
-    if (max_area < area_with_top)
-      max_area = area_with_top;
+  if (ratings[offset + 0] < ratings[offset + 1]) {
+    candies[offset + 1] = max(candies[offset + 1], candies[offset + 0] + 1);
   }
   
-  return max_area;
+  min_candies_update(offset + 1, ratings, candies);
+  
+  if (ratings[offset + 0] > ratings[offset + 1]) {
+    candies[offset + 0] = max(candies[offset + 0], candies[offset + 1] + 1);
+  }
+
 }
 
-// Driver program to test above function
+// Complete the candies function below.
+long candies(int n, vector<int> ratings) {
+  vector<int> candies(ratings.size());
+  for (size_t i = 0; i < ratings.size(); ++i) {
+    candies[i] = 1;
+  }
+  
+  min_candies_update(0, ratings, candies);
+  
+  int sum_of_elems = 0;
+  std::for_each(candies.begin(), candies.end(), [&] (int n) {
+    sum_of_elems += n;
+  });
+  
+  return sum_of_elems;
+}
+
 int main()
 {
-  int hist[] = {6, 2, 5, 4, 5, 1, 6};
-  int n = sizeof(hist)/sizeof(hist[0]);
-  cout << "Maximum area is " << getMaxArea(hist, n) << endl;
+  //ofstream fout(getenv("OUTPUT_PATH"));
+  
+//  int n;
+//  cin >> n;
+//  cin.ignore(numeric_limits<streamsize>::max(), '\n');
+  
+  //vector<int> arr = {1, 2, 2};
+  vector<int> arr = {4, 6, 4, 5, 6, 2};
+  
+//  for (int i = 0; i < n; i++) {
+//    int arr_item;
+//    cin >> arr_item;
+//    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+//
+//    arr[i] = arr_item;
+//  }
+  
+  long result = candies(3, arr);
+  
+  cout << result << "\n";
+  
+  //fout.close();
+  
   return 0;
 }
