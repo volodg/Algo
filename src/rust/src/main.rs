@@ -1,27 +1,7 @@
 use std::io;
 use std::cmp::max;
 
-fn min_candies_update_2(offset: usize, ratings: &[u32], candies: &mut [u32]) {
-
-    let ratings_len = ratings.len() - offset;
-
-    if ratings_len == 0 || ratings_len == 1 {
-        return
-    }
-
-    if ratings[offset + 0] < ratings[offset + 1] {
-        candies[offset + 1] = max(candies[offset + 1], candies[offset + 0] + 1);
-    }
-
-    min_candies_update(offset + 1, &ratings, candies);
-
-    if ratings[offset + 0] > ratings[offset + 1] {
-        candies[offset + 0] = max(candies[offset + 0], candies[offset + 1] + 1);
-    }
-}
-
-fn min_candies_update(offset: usize, ratings: &[u32], candies: &mut [u32]) {
-
+fn min_candies_update(ratings: &[u32], candies: &mut [u32]) {
     for i in 0..(ratings.len() - 1) {
         if ratings[i] < ratings[i + 1] {
             candies[i + 1] = max(candies[i + 1], candies[i] + 1);
@@ -52,10 +32,10 @@ fn make_initial_candies(size: usize) -> Vec<u32> {
     candies
 }
 
-fn min_candies(ratings: &[u32]) -> u32 {
+fn min_candies(ratings: &[u32]) -> u64 {
     let mut candies = make_initial_candies(ratings.len());
-    min_candies_update(0, ratings, &mut candies[..]);
-    candies.iter().map(|x| *x).sum()
+    min_candies_update(ratings, &mut candies[..]);
+    candies.iter().map(|x| *x as u64).sum()
 }
 
 #[cfg(test)]
@@ -66,26 +46,26 @@ mod tests {
     fn test_min_candies_update() {
         let ratings = vec![4, 6, 4, 5, 6, 2];
         let mut candies = make_initial_candies(ratings.len());
-        min_candies_update(0, &ratings, &mut candies);
+        min_candies_update(&ratings, &mut candies);
 
         assert_eq!(candies, vec![1, 2, 1, 2, 3, 1]);
     }
 
     #[test]
     fn test_min_candies_big_input() {
-        let top_num: u32 = 5000;
+        let top_num: u64 = 100_000;
         let result = (top_num + 1)*top_num/2;
         let mut ratings = Vec::<u32>::with_capacity(top_num as usize);
         for i in 0..top_num {
             let x = top_num - i;
-            ratings.push(x);
+            ratings.push(x as u32);
         }
 
         assert_eq!(min_candies(&ratings), result);
 
         let mut ratings = Vec::<u32>::with_capacity(top_num as usize);
         for i in 1..(top_num + 1) {
-            ratings.push(i);
+            ratings.push(i as u32);
         }
 
         assert_eq!(min_candies(&ratings), result);
