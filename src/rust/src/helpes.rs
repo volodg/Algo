@@ -50,6 +50,17 @@ fn read_nums() -> Vec<i32> {
     vec.map(|x| x.trim().parse::<i32>().unwrap()).collect()
 }
 
+fn read_2_nums<T>() -> (T, T)
+    where
+        T: std::str::FromStr,
+        <T as std::str::FromStr>::Err: std::fmt::Debug, {
+    let mut input_text = String::new();
+    io::stdin().read_line(&mut input_text).unwrap();
+    let mut vec = input_text.trim().split_whitespace();
+    let mut to_res = || -> T { vec.next().map(|x| x.parse::<T>().unwrap()).unwrap() };
+    (to_res(), to_res())
+}
+
 fn search_b(a: &str, b: &str) -> bool {
     let a_len = a.len() + 1;
     let b_len = b.len() + 1;
