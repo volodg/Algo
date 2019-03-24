@@ -14,9 +14,6 @@ impl Node {
 
 struct Graph {
     nodes: Vec<Node>,
-    deque: VecDeque<u32>,
-    visited: HashSet<u32>,
-    depths: Vec<i32>,
 }
 
 impl Graph {
@@ -25,13 +22,7 @@ impl Graph {
         for _ in 0..size {
             nodes.push(Node::new())
         }
-        let deque = VecDeque::<u32>::new();
-        let visited = HashSet::<u32>::new();
-        let mut depths = Vec::<i32>::with_capacity(size as usize);
-        for _ in 0..size {
-            depths.push(-1)
-        }
-        Self { nodes, deque, visited, depths }
+        Self { nodes }
     }
 
     pub fn add_edge(&mut self, from: u32, to: u32) {
@@ -39,32 +30,40 @@ impl Graph {
         self.nodes[to   as usize].connections.push(from);
     }
 
-    fn build_depth_from(&mut self, start: u32, cost: i32) {
-        self.deque.push_back(start);
-        self.visited.insert(start);
+    pub fn build_depths(&mut self, start_node: u32, cost: i32) -> Vec<i32> {
+        let mut deque = VecDeque::<u32>::new();
+        let mut visited = HashSet::<u32>::new();
+        let size = self.nodes.len();
+        let mut depths = Vec::<i32>::with_capacity(size);
+        for _ in 0..size {
+            depths.push(-1)
+        }
 
-        while !self.deque.is_empty() {
-            let top = self.deque.pop_front().unwrap();
-            let depth = self.depths[top as usize];
-            let top_depth = if depth == -1 {
-                0
-            } else {
-                depth
-            };
-            for connection in &self.nodes[top as usize].connections {
-                if !self.visited.contains(connection) {
-                    self.depths[*connection as usize] = top_depth + cost;
-                    self.visited.insert(*connection);
-                    self.deque.push_back(*connection);
+        let mut build_depth_from = || {
+            deque.push_back(start_node);
+            visited.insert(start_node);
+
+            while !deque.is_empty() {
+                let top = deque.pop_front().unwrap();
+                let depth = depths[top as usize];
+                let top_depth = if depth == -1 {
+                    0
+                } else {
+                    depth
+                };
+                for connection in &self.nodes[top as usize].connections {
+                    if !visited.contains(connection) {
+                        depths[*connection as usize] = top_depth + cost;
+                        visited.insert(*connection);
+                        deque.push_back(*connection);
+                    }
                 }
             }
-        }
-    }
+        };
 
-    pub fn build_depths(mut self, start_node: u32, cost: i32) -> Vec<i32> {
-        self.build_depth_from(start_node, cost);
-        self.depths.remove(start_node as usize);
-        self.depths
+        build_depth_from();
+        depths.remove(start_node as usize);
+        depths
     }
 }
 
@@ -97,9 +96,7 @@ mod tests {
     use std::io::BufReader;
     use std::io::BufRead;
     use std::fs::File;
-    //use std::io::Read;
-    //use std::path::Path;
-
+    
     fn read_line(file: &mut BufReader<File>) -> String {
         let mut input_text = String::new();
         file.read_line(&mut input_text).unwrap();
