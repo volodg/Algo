@@ -1,95 +1,46 @@
 import Foundation
 
-final class DoublyLinkedListNode {
-  var data: Int
-  var next: DoublyLinkedListNode?
-  weak var prev: DoublyLinkedListNode?
-  //var prev: DoublyLinkedListNode?
+func luckBalance(k: Int, contests: [[Int]]) -> Int {
   
-  public init(nodeData: Int) {
-    self.data = nodeData
-  }
-}
-
-final class DoublyLinkedList {
-  var head: DoublyLinkedListNode?
-  var tail: DoublyLinkedListNode?
-  
-  public init() {}
-  
-  public func insertNode(nodeData: Int) {
-    self.insertNode(node: DoublyLinkedListNode(nodeData: nodeData))
-  }
-  
-  private func insertNode(node: DoublyLinkedListNode) {
-    if let tail = tail {
-      tail.next = node
-      node.prev = tail
-    } else {
-      head = node
+  let (zeros, nonZeros) = contests.reduce(([Int](), [Int]())) { (acc, record) in
+    if record[1] == 0 {
+      return (acc.0 + [record[0]], acc.1)
     }
-    
-    tail = node
+    return (acc.0, acc.1 + [record[0]])
   }
+  
+  let sortedNonZeros = nonZeros.sorted { (a, b) -> Bool in
+    return a > b
+  }
+  
+  var sum = 0
+  for el in zeros {
+    sum += el
+  }
+  var index = 0
+  while index < sortedNonZeros.count && index < k {
+    sum += sortedNonZeros[index]
+    index += 1
+  }
+  
+  while index < sortedNonZeros.count {
+    sum -= sortedNonZeros[index]
+    index += 1
+  }
+  
+  return sum
 }
-
-func printDoublyLinkedList(head: DoublyLinkedListNode?, sep: String) {
-  var node = head
-  
-  while node != nil {
-    //fileHandle.write(String(node!.data).data(using: .utf8)!)
-    print(node!.data, terminator: "")
-    
-    node = node!.next
-    
-    if node != nil {
-      //fileHandle.write(sep.data(using: .utf8)!)
-      print(sep, terminator: "")
-    }
-  }
-}
-
-func reverse(llist head: DoublyLinkedListNode?) -> DoublyLinkedListNode? {
-  guard let head = head else { return nil }
-  
-  var curr = head
-  var prevHolder: DoublyLinkedListNode? = nil
-  
-  while (curr.next != nil) {
-    let next = curr.next!
-    let prev = prevHolder
-    prevHolder = curr
-    curr.next = prev
-    curr.prev = next
-    
-    curr = next
-  }
-  
-  curr.next = curr.prev
-  curr.prev = nil
-  
-  return curr
-}//[3 +2 -> +1]
-
-////test 1
-//var strings = [
-//  "1",
-//  "4",
-//  "1",
-//  "2",
-//  "3",
-//  "4"
-//]
 
 //test 2
 var strings = [
-  "1",
-  "4",
-  "1",
-  "2",
-  "3",
-  "4"
-]
+  "6 3",//+
+  "5 1",//+
+  "2 1",//+
+  "1 1",//-
+  "8 1",//+
+  "10 0",//+
+  "5 0"//+
+]//29
 
 var index = 0
 
@@ -102,24 +53,29 @@ func readLine2() -> String? {
   return result
 }
 
-guard let t = Int((readLine2()?.trimmingCharacters(in: .whitespacesAndNewlines))!)
+guard let nkTemp = readLine2() else { fatalError("Bad input") }
+let nk = nkTemp.split(separator: " ").map{ String($0) }
+
+guard let n = Int(nk[0].trimmingCharacters(in: .whitespacesAndNewlines))
   else { fatalError("Bad input") }
 
-for _ in 1...t {
-  guard let llistCount = Int((readLine2()?.trimmingCharacters(in: .whitespacesAndNewlines))!)
-    else { fatalError("Bad input") }
-  
-  let llist = DoublyLinkedList()
-  
-  for _ in 1...llistCount {
-    guard let llistItem = Int((readLine2()?.trimmingCharacters(in: .whitespacesAndNewlines))!)
-      else { fatalError("Bad input") }
-    llist.insertNode(nodeData: llistItem)
+guard let k = Int(nk[1].trimmingCharacters(in: .whitespacesAndNewlines))
+  else { fatalError("Bad input") }
+
+let contests: [[Int]] = AnyIterator{ readLine2() }.prefix(n).map {
+  let contestsRow: [Int] = $0.split(separator: " ").map {
+    if let contestsItem = Int($0.trimmingCharacters(in: .whitespacesAndNewlines)) {
+      return contestsItem
+    } else { fatalError("Bad input") }
   }
   
-  let llist1 = reverse(llist: llist.head!)
+  guard contestsRow.count == 2 else { fatalError("Bad input") }
   
-  printDoublyLinkedList(head: llist1, sep: " ")
-  print("")
-  //fileHandle.write("\n".data(using: .utf8)!)
+  return contestsRow
 }
+
+guard contests.count == n else { fatalError("Bad input") }
+
+let result = luckBalance(k: k, contests: contests)
+
+print(result)

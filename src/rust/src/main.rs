@@ -1,42 +1,62 @@
 use std::io;
-use std::cmp::max;
+use std::collections::HashMap;
 
-fn min_candies_update(ratings: &[u32], candies: &mut [u32]) {
-    let len = ratings.len();
-    for i in 0..(len - 1) {
-        if ratings[i] < ratings[i + 1] {
-            candies[i + 1] = max(candies[i + 1], candies[i] + 1);
-        } else {
-            if ratings[i] > ratings[i + 1] {
-                candies[i] = max(candies[i], candies[i + 1] + 1);
-            }
+fn is_valid(s: &str) -> bool {
+    if s.is_empty() || s.len() == 1 {
+        return true
+    }
+
+    let mut map = HashMap::<char, u32>::new();
+
+    for chr in s.chars() {
+        let counter = map.entry(chr).or_insert(0);
+        *counter += 1
+    }
+
+    let values = map.values();
+
+    if values.len() < 2 {
+        return true
+    }
+
+    let mut map = HashMap::<u32, u32>::new();
+
+    for val in values {
+        let counter = map.entry(*val).or_insert(0);
+        *counter += 1;
+        if map.len() > 2 {
+            return false
         }
     }
 
-    for j in 0..(len - 1) {
-        let i = len - j - 2;
-        if ratings[i] < ratings[i + 1] {
-            candies[i + 1] = max(candies[i + 1], candies[i] + 1);
-        } else {
-            if ratings[i] > ratings[i + 1] {
-                candies[i] = max(candies[i], candies[i + 1] + 1);
-            }
-        }
+    if map.len() < 2 { return true }
+
+    let mut key_values = map.iter();
+
+    let (ka, a) = key_values.next().unwrap();
+    let (kb, b) = key_values.next().unwrap();
+
+    if (*ka == 1 && *a == 1) || (*kb == 1 && *b == 1) {
+        return true
     }
+
+    if *a == 1 {
+        return *ka - *kb == 1
+    }
+
+    if *b == 1 {
+        return *kb - *ka == 1
+    }
+
+    false
 }
 
-fn make_initial_candies(size: usize) -> Vec<u32> {
-    let mut candies = Vec::<u32>::with_capacity(size);
-    for _ in 0..size {
-        candies.push(1);
+fn is_valid_str(s: &str) -> &'static str {
+    if is_valid(s) {
+        "YES"
+    } else {
+        "NO"
     }
-    candies
-}
-
-fn min_candies(ratings: &[u32]) -> u64 {
-    let mut candies = make_initial_candies(ratings.len());
-    min_candies_update(ratings, &mut candies[..]);
-    candies.iter().map(|x| *x as u64).sum()
 }
 
 #[cfg(test)]
@@ -44,62 +64,20 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_min_candies_update() {
-        let ratings = vec![4, 6, 4, 5, 6, 2];
-        let mut candies = make_initial_candies(ratings.len());
-        min_candies_update(&ratings, &mut candies);
-
-        assert_eq!(candies, vec![1, 2, 1, 2, 3, 1]);
-    }
-
-    #[test]
-    fn test_min_candies_big_input() {
-        let top_num: u64 = 1_000_000;
-        let result = (top_num + 1)*top_num/2;
-        let mut ratings = Vec::<u32>::with_capacity(top_num as usize);
-        for i in 0..top_num {
-            let x = top_num - i;
-            ratings.push(x as u32);
-        }
-
-        assert_eq!(min_candies(&ratings), result);
-
-        let mut ratings = Vec::<u32>::with_capacity(top_num as usize);
-        for i in 1..(top_num + 1) {
-            ratings.push(i as u32);
-        }
-
-        assert_eq!(min_candies(&ratings), result);
-    }
-
-    #[test]
-    fn test_min_candies() {
-        assert_eq!(min_candies(&vec![3, 2, 1]), 6);
-        assert_eq!(min_candies(&vec![1, 2, 2]), 4);
-        assert_eq!(min_candies(&vec![4, 6, 4, 5, 6, 2]), 10);
-        assert_eq!(min_candies(&vec![2, 4, 2, 6, 1, 7, 8, 9, 2, 1]), 19);
-        assert_eq!(min_candies(&vec![2, 4, 3, 5, 2, 6, 4, 5]), 12);
+    fn test_is_valid() {
+        assert_eq!(is_valid("aaaabbcc"), false);
+        assert_eq!(is_valid("aab"), true);
+        assert_eq!(is_valid("aabbcd"), false);
+        assert_eq!(is_valid("aabbccddeefghi"), false);
+        assert_eq!(is_valid("abcdefghhgfedecba"), true);
+        assert_eq!(is_valid("ibfdgaeadiaefgbhbdghhhbgdfgeiccbiehhfcggchgghadhdhagfbahhddgghbdehidbibaeaagaeeigffcebfbaieggabcfbiiedcabfihchdfabifahcbhagccbdfifhghcadfiadeeaheeddddiecaicbgigccageicehfdhdgafaddhffadigfhhcaedcedecafeacbdacgfgfeeibgaiffdehigebhhehiaahfidibccdcdagifgaihacihadecgifihbebffebdfbchbgigeccahgihbcbcaggebaaafgfedbfgagfediddghdgbgehhhifhgcedechahidcbchebheihaadbbbiaiccededchdagfhccfdefigfibifabeiaccghcegfbcghaefifbachebaacbhbfgfddeceababbacgffbagidebeadfihaefefegbghgddbbgddeehgfbhafbccidebgehifafgbghafacgfdccgifdcbbbidfifhdaibgigebigaedeaaiadegfefbhacgddhchgcbgcaeaieiegiffchbgbebgbehbbfcebciiagacaiechdigbgbghefcahgbhfibhedaeeiffebdiabcifgccdefabccdghehfibfiifdaicfedagahhdcbhbicdgibgcedieihcichadgchgbdcdagaihebbabhibcihicadgadfcihdheefbhffiageddhgahaidfdhhdbgciiaciegchiiebfbcbhaeagccfhbfhaddagnfieihghfbaggiffbbfbecgaiiidccdceadbbdfgigibgcgchafccdchgifdeieicbaididhfcfdedbhaadedfageigfdehgcdaecaebebebfcieaecfagfdieaefdiedbcadchabhebgehiidfcgahcdhcdhgchhiiheffiifeegcfdgbdeffhgeghdfhbfbifgidcafbfcd"), true);
     }
 }
 
 fn main() {
-    fn read_num<T>() -> T
-        where
-            T: std::str::FromStr,
-            <T as std::str::FromStr>::Err: std::fmt::Debug, {
-        let mut input_text = String::new();
-        io::stdin().read_line(&mut input_text).unwrap();
-        input_text.trim().parse::<T>().unwrap()
-    }
+    let mut input_text = String::new();
+    io::stdin().read_line(&mut input_text).unwrap();
 
-    let nums_count = read_num::<u32>();
-    let mut ratings = Vec::<u32>::with_capacity(nums_count as usize);
-
-    for _ in 0..nums_count {
-        let num = read_num::<u32>();
-        ratings.push(num);
-    }
-
-    let result = min_candies(&ratings);
+    let result = is_valid_str(input_text.trim());
     println!("{}", result)
 }
