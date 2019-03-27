@@ -1,62 +1,74 @@
 use std::io;
-use std::collections::HashMap;
 
-fn is_valid(s: &str) -> bool {
-    if s.is_empty() || s.len() == 1 {
-        return true
-    }
+#[derive(PartialEq, Debug)]
+enum Either<T1: PartialEq, T2: PartialEq> {
+    Left(T1),
+    Right(T2),
+}
 
-    let mut map = HashMap::<char, u32>::new();
+impl <T1: Eq, T2: Eq> Either<T1, T2> {
 
-    for chr in s.chars() {
-        let counter = map.entry(chr).or_insert(0);
-        *counter += 1
-    }
-
-    let values = map.values();
-
-    if values.len() < 2 {
-        return true
-    }
-
-    let mut map = HashMap::<u32, u32>::new();
-
-    for val in values {
-        let counter = map.entry(*val).or_insert(0);
-        *counter += 1;
-        if map.len() > 2 {
-            return false
+    fn is_right(&self) -> bool {
+        match self {
+            Either::Left(_) => false,
+            Either::Right(_) => true,
         }
     }
 
-    if map.len() < 2 { return true }
-
-    let mut key_values = map.iter();
-
-    let (ka, a) = key_values.next().unwrap();
-    let (kb, b) = key_values.next().unwrap();
-
-    if (*ka == 1 && *a == 1) || (*kb == 1 && *b == 1) {
-        return true
+    fn right(&self) -> &T2 {
+        match self {
+            Either::Left(_) => panic!(),
+            Either::Right(val) => val,
+        }
     }
 
-    if *a == 1 {
-        return *ka - *kb == 1
-    }
-
-    if *b == 1 {
-        return *kb - *ka == 1
-    }
-
-    false
 }
 
-fn is_valid_str(s: &str) -> &'static str {
-    if is_valid(s) {
-        "YES"
-    } else {
-        "NO"
+fn try_move(input: &mut [u32], starting_index: &mut usize) -> Either<(), usize> {
+
+    if input.len() <= 1 { return Either::Right(0) }
+
+    let mut index_to_move = input.len() - 2;
+    loop {
+        let start_swapping_index = index_to_move;
+        if input[index_to_move] > input[index_to_move + 1] {
+            *starting_index = index_to_move;
+        }
+        while index_to_move < input.len() - 1 && input[index_to_move] > input[index_to_move + 1] {
+            index_to_move += 1;
+            let swaps = index_to_move - start_swapping_index;
+            if swaps > 2 {
+                return Either::Left(())
+            }
+            input.swap(index_to_move - 1, index_to_move);
+        }
+        let swaps = index_to_move - start_swapping_index;
+        if swaps != 0 {
+            return Either::Right(swaps)
+        }
+        if index_to_move == 0 {
+            return Either::Right(0)
+        }
+        index_to_move -= 1
     }
+}
+
+fn minimum_bribes(input: &mut [u32]) -> Either<(), u64> {
+
+    let mut starting_index = input.len() - 2;
+
+    let mut result = try_move(input, &mut starting_index);
+    let mut moves: u64 = 0;
+    while result.is_right() {
+        let new_moved = result.right();
+        if *new_moved == 0 {
+            return Either::Right(moves)
+        }
+        moves += *result.right() as u64;
+        result = try_move(input, &mut starting_index);
+    }
+
+    Either::Left(())
 }
 
 #[cfg(test)]
@@ -64,20 +76,73 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_is_valid() {
-        assert_eq!(is_valid("aaaabbcc"), false);
-        assert_eq!(is_valid("aab"), true);
-        assert_eq!(is_valid("aabbcd"), false);
-        assert_eq!(is_valid("aabbccddeefghi"), false);
-        assert_eq!(is_valid("abcdefghhgfedecba"), true);
-        assert_eq!(is_valid("ibfdgaeadiaefgbhbdghhhbgdfgeiccbiehhfcggchgghadhdhagfbahhddgghbdehidbibaeaagaeeigffcebfbaieggabcfbiiedcabfihchdfabifahcbhagccbdfifhghcadfiadeeaheeddddiecaicbgigccageicehfdhdgafaddhffadigfhhcaedcedecafeacbdacgfgfeeibgaiffdehigebhhehiaahfidibccdcdagifgaihacihadecgifihbebffebdfbchbgigeccahgihbcbcaggebaaafgfedbfgagfediddghdgbgehhhifhgcedechahidcbchebheihaadbbbiaiccededchdagfhccfdefigfibifabeiaccghcegfbcghaefifbachebaacbhbfgfddeceababbacgffbagidebeadfihaefefegbghgddbbgddeehgfbhafbccidebgehifafgbghafacgfdccgifdcbbbidfifhdaibgigebigaedeaaiadegfefbhacgddhchgcbgcaeaieiegiffchbgbebgbehbbfcebciiagacaiechdigbgbghefcahgbhfibhedaeeiffebdiabcifgccdefabccdghehfibfiifdaicfedagahhdcbhbicdgibgcedieihcichadgchgbdcdagaihebbabhibcihicadgadfcihdheefbhffiageddhgahaidfdhhdbgciiaciegchiiebfbcbhaeagccfhbfhaddagnfieihghfbaggiffbbfbecgaiiidccdceadbbdfgigibgcgchafccdchgifdeieicbaididhfcfdedbhaadedfageigfdehgcdaecaebebebfcieaecfagfdieaefdiedbcadchabhebgehiidfcgahcdhcdhgchhiiheffiifeegcfdgbdeffhgeghdfhbfbifgidcafbfcd"), true);
+    fn test_try_move() {
+        let mut input = vec![1, 2, 3, 4, 5];
+        assert_eq!(try_move(&mut input, &mut 0), Either::Right(0));
+        assert_eq!(input, vec![1, 2, 3, 4, 5]);
+
+        let mut input = vec![1, 2, 3, 5, 4];
+        assert_eq!(try_move(&mut input, &mut 0), Either::Right(1));
+        assert_eq!(input, vec![1, 2, 3, 4, 5]);
+
+        let mut input = vec![1, 2, 5, 3, 4];
+        assert_eq!(try_move(&mut input, &mut 0), Either::Right(2));
+        assert_eq!(input, vec![1, 2, 3, 4, 5]);
+
+        let mut input = vec![1, 5, 2, 3, 4];
+        assert_eq!(try_move(&mut input, &mut 0), Either::Left(()));
+        assert_eq!(input, vec![1, 2, 3, 5, 4]);
+
+        let mut input = vec![2, 1, 3, 4, 5];
+        assert_eq!(try_move(&mut input, &mut 0), Either::Right(1));
+        assert_eq!(input, vec![1, 2, 3, 4, 5]);
+
+        let mut input = vec![];
+        assert_eq!(try_move(&mut input, &mut 0), Either::Right(0));
+        assert_eq!(input, vec![]);
+
+        let mut input = vec![1];
+        assert_eq!(try_move(&mut input, &mut 0), Either::Right(0));
+        assert_eq!(input, vec![1]);
+    }
+
+    #[test]
+    fn test_minimum_bribes() {
+        assert_eq!(minimum_bribes(&mut vec![2, 1, 5, 3, 4]), Either::Right(3));
+        assert_eq!(minimum_bribes(&mut vec![2, 5, 1, 3, 4]), Either::Left(()));
+        assert_eq!(minimum_bribes(&mut vec![5, 4, 3, 2, 1]), Either::Left(()));
     }
 }
 
 fn main() {
-    let mut input_text = String::new();
-    io::stdin().read_line(&mut input_text).unwrap();
+    fn read_num<T>() -> T
+        where
+            T: std::str::FromStr,
+            <T as std::str::FromStr>::Err: std::fmt::Debug, {
+        let mut input_text = String::new();
+        io::stdin().read_line(&mut input_text).unwrap();
+        input_text.trim().parse::<T>().unwrap()
+    }
 
-    let result = is_valid_str(input_text.trim());
-    println!("{}", result)
+    fn read_nums<T>() -> Vec<T>
+        where
+            T: std::str::FromStr,
+            <T as std::str::FromStr>::Err: std::fmt::Debug, {
+        let mut input_text = String::new();
+        io::stdin().read_line(&mut input_text).unwrap();
+        let vec = input_text.trim().split_whitespace();
+        vec.map(|x| x.trim().parse::<T>().unwrap()).collect()
+    }
+
+    let num = read_num::<u32>();
+
+    for _ in 0..num {
+        let _ = read_num::<u32>();
+        let mut nums = read_nums::<u32>();
+        let result = minimum_bribes(&mut nums);
+        match result {
+            Either::Left(_) => println!("Too chaotic"),
+            Either::Right(val) => println!("{}", val),
+        }
+    }
 }
