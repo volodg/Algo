@@ -24,87 +24,29 @@ impl <T1: Eq, T2: Eq> Either<T1, T2> {
 
 }
 
-fn try_move(input: &mut [u32], starting_index: &mut usize) -> Either<(), usize> {
+fn minimum_bribes(input: &[u32]) -> Either<(), u32> {
 
-    if input.len() <= 1 { return Either::Right(0) }
+    let mut ans: u32 = 0;
 
-    let mut index_to_move = input.len() - 2;
-    loop {
-        let start_swapping_index = index_to_move;
-        if input[index_to_move] > input[index_to_move + 1] {
-            *starting_index = index_to_move;
+    for i in 0..(input.len() - 1) {
+        let a = input[i] as usize;
+        if a - 1 > i && a - 1 - i > 2 {
+            return Either::Left(())
         }
-        while index_to_move < input.len() - 1 && input[index_to_move] > input[index_to_move + 1] {
-            index_to_move += 1;
-            let swaps = index_to_move - start_swapping_index;
-            if swaps > 2 {
-                return Either::Left(())
+        for j in i..input.len() {
+            let b = input[j] as usize;
+            if a > b {
+                ans += 1;
             }
-            input.swap(index_to_move - 1, index_to_move);
         }
-        let swaps = index_to_move - start_swapping_index;
-        if swaps != 0 {
-            return Either::Right(swaps)
-        }
-        if index_to_move == 0 {
-            return Either::Right(0)
-        }
-        index_to_move -= 1
-    }
-}
-
-fn minimum_bribes(input: &mut [u32]) -> Either<(), u64> {
-
-    let mut starting_index = input.len() - 2;
-
-    let mut result = try_move(input, &mut starting_index);
-    let mut moves: u64 = 0;
-    while result.is_right() {
-        let new_moved = result.right();
-        if *new_moved == 0 {
-            return Either::Right(moves)
-        }
-        moves += *result.right() as u64;
-        result = try_move(input, &mut starting_index);
     }
 
-    Either::Left(())
+    Either::Right(ans)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn test_try_move() {
-        let mut input = vec![1, 2, 3, 4, 5];
-        assert_eq!(try_move(&mut input, &mut 0), Either::Right(0));
-        assert_eq!(input, vec![1, 2, 3, 4, 5]);
-
-        let mut input = vec![1, 2, 3, 5, 4];
-        assert_eq!(try_move(&mut input, &mut 0), Either::Right(1));
-        assert_eq!(input, vec![1, 2, 3, 4, 5]);
-
-        let mut input = vec![1, 2, 5, 3, 4];
-        assert_eq!(try_move(&mut input, &mut 0), Either::Right(2));
-        assert_eq!(input, vec![1, 2, 3, 4, 5]);
-
-        let mut input = vec![1, 5, 2, 3, 4];
-        assert_eq!(try_move(&mut input, &mut 0), Either::Left(()));
-        assert_eq!(input, vec![1, 2, 3, 5, 4]);
-
-        let mut input = vec![2, 1, 3, 4, 5];
-        assert_eq!(try_move(&mut input, &mut 0), Either::Right(1));
-        assert_eq!(input, vec![1, 2, 3, 4, 5]);
-
-        let mut input = vec![];
-        assert_eq!(try_move(&mut input, &mut 0), Either::Right(0));
-        assert_eq!(input, vec![]);
-
-        let mut input = vec![1];
-        assert_eq!(try_move(&mut input, &mut 0), Either::Right(0));
-        assert_eq!(input, vec![1]);
-    }
 
     #[test]
     fn test_minimum_bribes() {
