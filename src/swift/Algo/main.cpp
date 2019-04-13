@@ -5,60 +5,145 @@
 #include <algorithm>
 #include <stack>
 #include <queue>
+#include <map>
 
+//#include <bits/stdc++.h>
+
+//
+//  main.cpp
+//  Huffman
+//
+//  Created by Vatsal Chanana
+
+//#include<bits/stdc++.h>
 using namespace std;
 
-struct Player {
-  int score;
-  string name;
-};
+typedef struct node {
+  
+  int freq;
+  char data;
+  node * left;
+  node * right;
+} node;
 
-class Checker{
-public:
-  // complete this method
-  static int compare(int a, int b)  {
-    if (a < b) {
-      return -1;
-    } else if (a > b) {
-      return 1;
-    }
-    return 0;
-  }
-  static int comparator(Player a, Player b)  {
-    int result = compare(a.score, b.score);
-    if (result == 0) {
-      auto res1 = b.name.compare(a.name);
-      return (res1 > 0) ? 1 : ((res1 < 0) ? -1 : 0);
-    }
-    return result;
+struct deref:public binary_function<node*, node*, bool> {
+  bool operator()(const node * a, const node * b)const {
+    return a->freq > b->freq;
   }
 };
 
+typedef priority_queue<node *,vector<node*>, deref> spq;
 
-
-
-bool compare(Player a, Player b) {
-  if(Checker::comparator(a,b) == -1)
-    return false;
-  return true;
+node * huffman_hidden(string s) {
+  
+  spq pq;
+  vector<int>count(256, 0);
+  
+  for(int i = 0; i < s.length(); i++) {
+    count[s[i]]++;
+  }
+  
+  for(int i = 0; i < 256; i++) {
+    
+    node * n_node = new node;
+    n_node->left = NULL;
+    n_node->right = NULL;
+    n_node->data = (char)i;
+    n_node->freq = count[i];
+    
+    if( count[i] != 0 )
+      pq.push(n_node);
+    
+  }
+  
+  while( pq.size() != 1 ) {
+    
+    node * left = pq.top();
+    pq.pop();
+    node * right = pq.top();
+    pq.pop();
+    node * comb = new node;
+    comb->freq = left->freq + right->freq;
+    comb->data = '\0';
+    comb->left = left;
+    comb->right = right;
+    pq.push(comb);
+    
+  }
+  
+  return pq.top();
+  
 }
-int main()
-{
-  int n;
-  cin >> n;
-  vector< Player > players;
-  string name;
-  int score;
-  for(int i = 0; i < n; i++){
-    cin >> name >> score;
-    Player player;
-    player.name = name;
-    player.score = score;
-    players.push_back(player);
+
+void print_codes_hidden(node * root, string code, map<char, string>&mp) {
+  
+  if(root == NULL)
+    return;
+  if(root->data != '\0') {
+    mp[root->data] = code;
   }
-  sort(players.begin(), players.end(), compare);
-  for(int i = 0; i < players.size(); i++) {
-    cout << players[i].name << " " << players[i].score << endl;
+  
+  print_codes_hidden( root->left, code+'0', mp );
+  print_codes_hidden( root->right, code+'1', mp );
+  
+}
+
+/*
+ The structure of the node is
+ 
+ typedef struct node
+ {
+ int freq;
+ char data;
+ node * left;
+ node * right;
+ 
+ }node;
+ 
+ */
+
+char decode_huff(node * root, const string& s, int& pos) {
+  if (root->left == nullptr && root->right == nullptr) {
+    return root->data;
   }
+  char curr = s[pos];
+  if (curr == '0') {
+    pos += 1;
+    return decode_huff(root->left, s, pos);
+  } else {
+    pos += 1;
+    return decode_huff(root->right, s, pos);
+  }
+}
+
+void decode_huff(node * root, string s) {
+  int pos = 0;
+  std::string result;
+  while (pos < s.length()) {
+    result += decode_huff(root, s, pos);
+  }
+  std::cout << result << std::endl;
+}
+
+int main() {
+  
+  string s;
+  std::cout << "Enter: " << std::endl;
+  std::cin >> s;
+  
+  node * tree = huffman_hidden(s);
+  string code = "";
+  
+  map<char, string> mp;
+  print_codes_hidden(tree, code, mp);
+  
+  string coded;
+  
+  for(int i = 0; i < s.length(); i++) {
+    coded += mp[s[i]];
+  }
+  
+  decode_huff(tree, coded);
+  
   return 0;
 }

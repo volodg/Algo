@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		C3649E6C224D0E0400648182 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3439D7522368CE400DFB7A5 /* main.swift */; };
+		C32E15B12258CD63002D4AE9 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3439D7522368CE400DFB7A5 /* main.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -100,7 +100,7 @@
 				TargetAttributes = {
 					C3439D7122368CE400DFB7A5 = {
 						CreatedOnToolsVersion = 10.1;
-						LastSwiftMigration = 1010;
+						LastSwiftMigration = 1020;
 					};
 				};
 			};
@@ -110,6 +110,7 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
+				Base,
 			);
 			mainGroup = C3439D6922368CE400DFB7A5;
 			productRefGroup = C3439D7322368CE400DFB7A5 /* Products */;
@@ -126,7 +127,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C3649E6C224D0E0400648182 /* main.swift in Sources */,
+				C32E15B12258CD63002D4AE9 /* main.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -261,7 +262,7 @@
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
 		};
@@ -277,7 +278,7 @@
 					"@loader_path/../Frameworks",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
 		};
