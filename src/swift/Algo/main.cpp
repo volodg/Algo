@@ -6,144 +6,92 @@
 #include <stack>
 #include <queue>
 #include <map>
+#include <unordered_map>
 
-//#include <bits/stdc++.h>
-
-//
-//  main.cpp
-//  Huffman
-//
-//  Created by Vatsal Chanana
-
-//#include<bits/stdc++.h>
 using namespace std;
 
-typedef struct node {
+vector<int> freqQuery(vector<vector<int>> queries) {
   
-  int freq;
-  char data;
-  node * left;
-  node * right;
-} node;
+  vector<int> result;
+  
+  unordered_map <int, int> s1;
+  unordered_map <int, int> s2;
+  
+  for (auto& query: queries) {
+    auto const& cmd = query[0];
+    auto const& num = query[1];
+    switch (cmd) {
+    case 1:
+      {
+        auto prev = s1[num];
+        auto newVal = prev + 1;
+        s1[num] = newVal;
 
-struct deref:public binary_function<node*, node*, bool> {
-  bool operator()(const node * a, const node * b)const {
-    return a->freq > b->freq;
+        //remove old
+        if (prev != 0) {
+          auto oldFrIt = s2.find(prev);
+          if (oldFrIt != s2.end()) {
+            auto oldFr = oldFrIt->second;
+            if (oldFr == 1) {
+              s2.erase(prev);
+            } else {
+              s2[prev] = oldFr - 1;
+            }
+          }
+        }
+        
+        //append new
+        s2[newVal] = s2[newVal] + 1;
+        
+        break;
+      }
+    case 2:
+      {
+        auto prevIt = s1.find(num);
+        if (prevIt != s1.end()) {
+          auto prev = prevIt->second;
+          auto newVal = prev - 1;
+          if (newVal != 0) {
+            s1[num] = newVal;
+          } else {
+            s1.erase(num);
+          }
+          
+          if (newVal > 0) {
+            s2[newVal] = s2[newVal] + 1;
+          }
+          
+          auto oldFrIt = s2.find(prev);
+          if (oldFrIt != s2.end()) {
+            auto oldFr = oldFrIt->second;
+            if (oldFr == 1) {
+              s2.erase(prev);
+            } else {
+              s2[prev] = oldFr - 1;
+            }
+          }
+        }
+      }
+      break;
+    case 3:
+      if (s2.find(num) != s2.end()) {
+        result.push_back(1);
+      } else {
+        result.push_back(0);
+      }
+      break;
+    default:
+        break;
+    }
   }
-};
 
-typedef priority_queue<node *,vector<node*>, deref> spq;
-
-node * huffman_hidden(string s) {
   
-  spq pq;
-  vector<int>count(256, 0);
-  
-  for(int i = 0; i < s.length(); i++) {
-    count[s[i]]++;
-  }
-  
-  for(int i = 0; i < 256; i++) {
-    
-    node * n_node = new node;
-    n_node->left = NULL;
-    n_node->right = NULL;
-    n_node->data = (char)i;
-    n_node->freq = count[i];
-    
-    if( count[i] != 0 )
-      pq.push(n_node);
-    
-  }
-  
-  while( pq.size() != 1 ) {
-    
-    node * left = pq.top();
-    pq.pop();
-    node * right = pq.top();
-    pq.pop();
-    node * comb = new node;
-    comb->freq = left->freq + right->freq;
-    comb->data = '\0';
-    comb->left = left;
-    comb->right = right;
-    pq.push(comb);
-    
-  }
-  
-  return pq.top();
-  
-}
-
-void print_codes_hidden(node * root, string code, map<char, string>&mp) {
-  
-  if(root == NULL)
-    return;
-  if(root->data != '\0') {
-    mp[root->data] = code;
-  }
-  
-  print_codes_hidden( root->left, code+'0', mp );
-  print_codes_hidden( root->right, code+'1', mp );
-  
-}
-
-/*
- The structure of the node is
- 
- typedef struct node
- {
- int freq;
- char data;
- node * left;
- node * right;
- 
- }node;
- 
- */
-
-char decode_huff(node * root, const string& s, int& pos) {
-  if (root->left == nullptr && root->right == nullptr) {
-    return root->data;
-  }
-  char curr = s[pos];
-  if (curr == '0') {
-    pos += 1;
-    return decode_huff(root->left, s, pos);
-  } else {
-    pos += 1;
-    return decode_huff(root->right, s, pos);
-  }
-}
-
-void decode_huff(node * root, string s) {
-  int pos = 0;
-  std::string result;
-  while (pos < s.length()) {
-    result += decode_huff(root, s, pos);
-  }
-  std::cout << result << std::endl;
+  return result;
 }
 
 int main() {
   
-  string s;
-  std::cout << "Enter: " << std::endl;
-  std::cin >> s;
-  
-  node * tree = huffman_hidden(s);
-  string code = "";
-  
-  map<char, string> mp;
-  print_codes_hidden(tree, code, mp);
-  
-  string coded;
-  
-  for(int i = 0; i < s.length(); i++) {
-    coded += mp[s[i]];
-  }
-  
-  decode_huff(tree, coded);
+  freqQuery({{1, 5, 5, 25, 125}});
   
   return 0;
 }
