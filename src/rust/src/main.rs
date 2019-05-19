@@ -1,121 +1,60 @@
 use std::io;
 use std::collections::HashSet;
-use std::collections::VecDeque;
+use std::rc::Rc;
 
-#[derive(Clone, Hash, PartialEq, Eq, Debug)]
-struct Pos {
-    x: i32,
-    y: i32,
+struct Edge {
+    from: i64,
+    to: i64,
+    weight: i64,
 }
 
-impl Pos {
-    fn new(x: i32, y: i32) -> Self { Self { x, y } }
-
-    fn is_valid(&self, width: usize, grid: &Vec<Vec<char>>) -> bool {
-        let result = self.x >= 0 && (self.x as usize) < width && self.y >= 0 && (self.y as usize) < width;
-        if result {
-            let row = grid.get(self.x as usize).unwrap();
-            return *row.get(self.y as usize).unwrap() != 'X'
-        }
-        result
-    }
-
-    fn next_right(&self) -> Self { Pos::new(self.x, self.y + 1) }
-
-    fn next_left(&self) -> Self { Pos::new(self.x, self.y - 1) }
-
-    fn next_up(&self) -> Self { Pos::new(self.x - 1, self.y) }
-
-    fn next_down(&self) -> Self { Pos::new(self.x + 1, self.y) }
+struct NodesSet {
+    set: Rc<HashSet<i64>>,
+    has_machine: bool,
 }
 
-struct Node {
-    pos: Pos,
-    first_x: bool,
-    first_y: bool,
-    depth: i32,
-}
-
-impl Node {
-    fn new(pos: Pos, first_x: bool, first_y: bool, depth: i32) -> Self {
-        Self { pos, first_x, first_y, depth }
+impl NodesSet {
+    fn new(has_machine: bool) -> Self {
+        NodesSet { set: Rc::new(HashSet::<i64>::new()), has_machine }
     }
 }
 
-fn neighbours(visited: &HashSet<Pos>, grid: &Vec<Vec<char>>, width: usize, curr_node: &Node) -> Vec<Node> {
-    let mut result = vec![];
+fn min_time(roads: Vec<Edge>, machines: Vec<i64>) -> i64 {
 
-    let left = curr_node.pos.next_left();
-    if left.is_valid(width, grid) && !visited.contains(&left) {
-        let mut depth = curr_node.depth;
-        if curr_node.first_y {
-            depth += 1
-        }
-        let new_node = Node::new(left, true, !curr_node.first_y, depth);
-        result.push(new_node)
+    let mut cities_sets = Vec::<NodesSet>::with_capacity(roads.len());
+    for _ in 0..(roads.len() + 1) {
+        cities_sets.push(NodesSet::new(false))
     }
 
-    let right = curr_node.pos.next_right();
-    if right.is_valid(width, grid) && !visited.contains(&right) {
-        let mut depth = curr_node.depth;
-        if curr_node.first_y {
-            depth += 1
-        }
-        let new_node = Node::new(right, true, !curr_node.first_y, depth);
-        result.push(new_node)
+    let mut result = 0;
+
+    for machine in machines {
+        cities_sets[machine as usize].has_machine = true
     }
 
-    let up = curr_node.pos.next_up();
-    if up.is_valid(width, grid) && !visited.contains(&up) {
-        let mut depth = curr_node.depth;
-        if curr_node.first_x {
-            depth += 1
+    let mut roads = roads;
+    roads.sort_by(|a, b| b.weight.cmp(&a.weight));
+
+    for edge in roads {
+        let from_node = &cities_sets[edge.from as usize];
+        let to_node = &cities_sets[edge.to as usize];
+        if from_node.has_machine && to_node.has_machine {
+            result += edge.weight
+        } else {
+            let has_machine = from_node.has_machine || to_node.has_machine;
+            let union_set: std::collections::HashSet<i64> = from_node.set
+                .union(&to_node.set)
+                .map(|x| *x)
+                .collect();
+            let new_set = Rc::new(union_set);
+
+            cities_sets[edge.from as usize] = NodesSet { set: new_set.clone(), has_machine };
+            cities_sets[edge.to as usize] = NodesSet { set: new_set.clone(), has_machine };
         }
-        let new_node = Node::new(up, !curr_node.first_x, true, depth);
-        result.push(new_node)
     }
 
-    let down = curr_node.pos.next_down();
-    if down.is_valid(width, grid) && !visited.contains(&down) {
-        let mut depth = curr_node.depth;
-        if curr_node.first_x {
-            depth += 1
-        }
-        let new_node = Node::new(down, !curr_node.first_x, true, depth);
-        result.push(new_node)
-    }
-
-    return result
+    result
 }
-
-fn minimum_moves(grid: Vec<Vec<char>>, start_pos: Pos, goal_pos: Pos) -> i32 {
-
-    if start_pos == goal_pos {
-        return 0
-    }
-
-    let mut visited = HashSet::<Pos>::with_capacity(grid.len() * grid.len());
-    let mut queue = VecDeque::new();
-    queue.push_back(Node::new(start_pos.clone(), true, true, 0));
-    visited.insert(start_pos.clone());
-
-    while !queue.is_empty() {
-        let element = queue.pop_front().unwrap();
-        let new_neighbours = neighbours(&visited, &grid, grid.len(), &element);
-        for el in new_neighbours {
-            if el.pos == goal_pos {
-                println!("pos: {:?} from {:?}", el.pos, element.pos);
-                return el.depth
-            }
-            println!("pos: {:?} from {:?}", el.pos, element.pos);
-            visited.insert(el.pos.clone());
-            queue.push_back(el)
-        }
-    }
-
-    panic!()
-}
-
 
 #[cfg(test)]
 mod tests {
@@ -138,7 +77,7 @@ fn main() {
         input_text.trim().parse::<T>().unwrap()
     }
 
-    fn read_4_nums<T>() -> (T, T, T, T)
+    fn read_2_nums<T>() -> (T, T)
         where
             T: std::str::FromStr,
             <T as std::str::FromStr>::Err: std::fmt::Debug, {
@@ -146,24 +85,38 @@ fn main() {
         io::stdin().read_line(&mut input_text).unwrap();
         let mut vec = input_text.trim().split_whitespace();
         let mut to_res = || -> T { vec.next().map(|x| x.parse::<T>().unwrap()).unwrap() };
-        (to_res(), to_res(), to_res(), to_res())
+        (to_res(), to_res())
     }
 
-    let size = read_num::<usize>();
-
-    let mut grid = Vec::<String>::with_capacity(size);
-
-    for _ in 0..size {
+    fn read_3_nums<T>() -> (T, T, T)
+        where
+            T: std::str::FromStr,
+            <T as std::str::FromStr>::Err: std::fmt::Debug, {
         let mut input_text = String::new();
         io::stdin().read_line(&mut input_text).unwrap();
-        grid.push(input_text)
+        let mut vec = input_text.trim().split_whitespace();
+        let mut to_res = || -> T { vec.next().map(|x| x.parse::<T>().unwrap()).unwrap() };
+        (to_res(), to_res(), to_res())
     }
 
-    let (start_x, start_y, goal_x, goal_y) = read_4_nums::<i32>();
+    let (edges_count, machines_count) = read_2_nums::<i32>();
 
-    let grid2 = grid.into_iter().map(|s| s.chars().collect()).collect();
+    let mut roads = Vec::<Edge>::with_capacity((edges_count - 1) as usize);
 
-    let result = minimum_moves(grid2, Pos::new(start_x, start_y), Pos::new(goal_x, goal_y));
+    for _ in 0..(edges_count - 1) {
+        let (from, to, weight) = read_3_nums::<i64>();
+        let row = Edge { from, to, weight };
+        roads.push(row)
+    }
+
+    let mut machines = Vec::<i64>::with_capacity(machines_count as usize);
+
+    for _ in 0..machines_count {
+        let machine = read_num::<i64>();
+        machines.push(machine)
+    }
+
+    let result = min_time(roads, machines);
 
     println!("{}", result)
 }
