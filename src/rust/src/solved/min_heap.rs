@@ -1,4 +1,3 @@
-use std::io;
 use std::cmp::PartialOrd;
 
 struct MinHeap<T> {
@@ -194,41 +193,5 @@ mod tests {
         heap.remove(&-744898);
 
         assert_eq!(*heap.get_min(), -419921);
-    }
-}
-
-fn main() {
-    fn read_num<T>() -> T
-        where
-            T: std::str::FromStr,
-            <T as std::str::FromStr>::Err: std::fmt::Debug, {
-        let mut input_text = String::new();
-        io::stdin().read_line(&mut input_text).unwrap();
-        input_text.trim().parse::<T>().unwrap()
-    }
-
-    fn read_nums<T>() -> Vec<T>
-        where
-            T: std::str::FromStr,
-            <T as std::str::FromStr>::Err: std::fmt::Debug, {
-        let mut input_text = String::new();
-        io::stdin().read_line(&mut input_text).unwrap();
-        let vec = input_text.trim().split_whitespace();
-        vec.map(|x| x.trim().parse::<T>().unwrap()).collect()
-    }
-
-    let count = read_num::<i32>();
-
-    let mut heap = MinHeap::<i32>::new();
-
-    for _ in 0..count {
-        let nums = read_nums::<i32>();
-        let cmd = nums[0];
-        match cmd {
-            1 => heap.append(nums[1]),
-            2 => heap.remove(&nums[1]),
-            3 => println!("{}", heap.get_min()),
-            _ => panic!()
-        }
     }
 }
